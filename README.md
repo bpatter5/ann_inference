@@ -6,6 +6,11 @@ designed to highlight potential issues in applying neural network architectures.
 
 ## Modules
 
-#### sample
+### sample
 
- * __boot.py__: script for performing bootstrap sampling on model params
+ * *boot.py*: script for performing bootstrap sampling on model params.  
+ 
+ 
+### data
+
+* *load_data.py*: script for generating datasets for testing.
