@@ -51,7 +51,7 @@ class ModelData():
         index = np.arange(0, self.y.shape[0])
         
         # generate train and test indices
-        train_idx = np.random.choice(index, size= int(self.train_pct * index.shape[0]))
+        train_idx = np.random.choice(index, size= int(self.train_pct * index.shape[0]), replace=False)
         test_idx = index[~np.in1d(index, train_idx)]
         
         # return tuple of train and test indices
@@ -104,3 +104,29 @@ class ModelData():
     # method to get mean of y_train 
     def get_mean_y(self):
         return(np.mean(self.get_y_train()))
+    
+    # method to split training index into batches
+    # takes the number of batches (int) as input
+    # outputs breaks in the index
+    def split_batches(self, num_batches):
+        # list to hold batches
+        batches = list()
+        # calc the batch size to generate num_batches
+        batch_size = int(self.train_idx.shape[0] / num_batches)
+        # calc the breaks in the index
+        breaks = np.linspace(0, self.train_idx.shape[0], num = batch_size, dtype=int)
+        
+        # iterate over breaks
+        for i in np.arange(0, breaks.shape[0] - 1):
+            # assign index values to list element
+            batches.append(self.train_idx[breaks[i]:breaks[i + 1]])
+        
+        # return list[np.array] of batches
+        return(batches)
+    
+    # method to shuffle the training index    
+    def shuffle_train_idx(self):
+        # shuffle the training index
+        np.random.shuffle(self.train_idx)
+            
+        
