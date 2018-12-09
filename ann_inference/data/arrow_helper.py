@@ -16,15 +16,15 @@ def write_test(path, test, context):
     '''
     Description
     -----------
-    Method to serialize a test and write it to disk.
+    Method to serialize a test and write it to disk
     
     Parameters
     ----------
     path : string
-        File path for which to write the serialized object to.
+        File path for which to write the serialized object to
     
     test : ann_inference.testing.xxxx_test
-        Test to serialize and write to disk.
+        Test to serialize and write to disk
     
     context : pa.SerializationContext
         Custom serialization context that defines how the test is to be written
@@ -45,7 +45,7 @@ def read_test(path, context):
     '''
     Description
     -----------
-    Read a serialized pyarrow buffer from disk and return a test object.
+    Read a serialized pyarrow buffer from disk and return a test object
     
     Parameters
     ----------
@@ -95,16 +95,55 @@ def gen_parquet_batch(test_stat, fill_col, epoch_num, test_num, col_names):
         
     '''
     data = []
+        
     
+        
     data.append(pa.array(np.full(test_stat.shape[0], fill_col)))
     data.append(pa.array(np.full(test_stat.shape[0], test_num)))
     data.append(pa.array(np.full(test_stat.shape[0], epoch_num)))
-      
+        
     for j in np.arange(0, test_stat.shape[1]):
         data.append(pa.array(test_stat[:,j]))
-    
-
+        
     return(pa.RecordBatch.from_arrays(data, col_names))
+
+def array_to_parquet(path, test_stat, fill_col, test_num, col_names):
+    
+    '''
+    Description
+    -----------
+    Generate a Parquet dataset from a numpy array of PyTorch model parameters.
+    
+    Parameters
+    ----------
+    test_stat : np.array
+       Array of parameters to be written to batch and eventually saved to disk for later testing
+    
+    fill_col : string
+        Name of the parameter being tested which will later become a partition on disk
+    
+    test_num : int
+        Current test assuming multiple model runs
+        
+    col_names : list[string]
+        Column names to assign to fields in the current batch
+    
+    Returns
+    -------    
+        : void
+        writes to parquet store
+    '''
+    data = []
+    
+    data.append(pa.array(np.full(test_stat.shape[0], fill_col)))
+    data.append(pa.array(np.full(test_stat.shape[0], test_num)))
+    data.append(pa.array(np.arange(0, test_stat.shape[0])))
+    
+    data.append(pa.array(test_stat))
+    
+    error_tbl = pa.Table.from_arrays(data, col_names)
+    
+    pq.write_to_dataset(error_tbl, path, partition_cols=['stat'])
 
 def results_to_parquet(path, batch_list):
     '''
@@ -129,4 +168,26 @@ def results_to_parquet(path, batch_list):
     
     tbl = pa.Table.from_batches(batch_list)
     
-    pq.write_to_dataset(tbl, path, partition_cols=['stat', 'id']) 
+    pq.write_to_dataset(tbl, path, partition_cols=['stat'])
+    
+
+def read_parquet_store(path, nthreads=5):
+    '''
+    Description
+    -----------
+    Read dataset at the given path into a pandas dataframe for analysis
+    
+    Parameters
+    ----------
+    path : string
+        path to parquet data store to read into memory for analysis
+        
+    nthreads : int, 5
+        number of threads to use for reading the parquet store into memory
+        
+    Returns
+    -------
+     : pandas.DataFrame
+         pandas frame at the given path
+    '''
+    return(pq.read_table(path, nthreads=nthreads).to_pandas())

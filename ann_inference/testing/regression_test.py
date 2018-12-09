@@ -86,25 +86,25 @@ class RegressionTester():
         
         
         # storing mse for each epoch 
-        batch_dict = {'mse':list(), 'weight_1':list(), 'weight_2':list()}
+        batch_dict = {'weight_1':list(), 'weight_2':list()}
         
-        weight_cols = {'mse':['test_stat', 'test_num', 'epoch_num', 'mse']}
+        weight_cols = {'mse':['stat', 'id', 'epoch_num', 'mse']}
         
         weight_cols['weight_1'] = []
-        weight_cols['weight_1'].append('test_stat')
-        weight_cols['weight_1'].append('test_num')
+        weight_cols['weight_1'].append('stat')
+        weight_cols['weight_1'].append('id')
         weight_cols['weight_1'].append('epoch_num')
         
         weight_cols['weight_1'].extend(['weight_' + str(i) for i in np.arange(0, self.model.linear_1.weight.shape[0])])
         
         weight_cols['weight_2'] = []
-        weight_cols['weight_2'].append('test_stat')
-        weight_cols['weight_2'].append('test_num')
+        weight_cols['weight_2'].append('stat')
+        weight_cols['weight_2'].append('id')
         weight_cols['weight_2'].append('epoch_num')
         
         weight_cols['weight_2'].extend(['weight_' + str(i) for i in np.arange(0, self.model.linear_2.weight.shape[0])])
         
-        #mse_epoch = np.zeros(num_epochs)
+        mse_epoch = np.zeros([num_epochs])
         #weight_1 = np.zeros([num_epochs, self.model.linear_1.weight.shape[0]])
         #weight_2 = np.zeros([num_epochs, self.model.linear_2.weight.shape[0]])
         
@@ -133,50 +133,65 @@ class RegressionTester():
             
             # predicted loss compared to actual at epoch
             epoch_loss = self.model.forward(X[self.model_data.test_idx,:])
-            batch_dict['mse'].append(ah.gen_parquet_batch(self.loss_func(epoch_loss, y[self.model_data.test_idx,:]), fill_col='mse',
-                      epoch_num=epoch, test_num=test_id, col_names=weight_cols['mse']))
+            
+            error_calc = self.loss_func(epoch_loss, y[self.model_data.test_idx,:])
+            mse_epoch[epoch] = error_calc.detach().numpy()
+            
+            #batch_dict['mse'].append(ah.gen_parquet_batch(float(error_calc.detach().numpy()), fill_col='mse',
+                      #epoch_num=epoch, test_num=test_id, col_names=weight_cols['mse']))
             
             # storing the mean weight for each epoch along the columns
-            batch_dict['weight_1'].append(ah.gen_parquet_batch(np.mean(self.model.linear_1.weight.detach().numpy(), axis=1) , 
+            weight1_calc = np.mean(self.model.linear_1.weight.detach().numpy(), axis=1)
+           # print(weight1_calc.shape)
+            weight1_calc = np.reshape(weight1_calc, [1, weight1_calc.shape[0]])
+            
+            batch_dict['weight_1'].append(ah.gen_parquet_batch(weight1_calc ,
                       fill_col='weight_1', epoch_num=epoch, test_num=test_id, col_names=weight_cols['weight_1']))
-            batch_dict['weight_2'].append(ah.gen_parquet_batch(np.mean(self.model.linear_2.weight.detach().numpy(), axis=1) ,
+            
+            weight2_calc = np.mean(self.model.linear_2.weight.detach().numpy(), axis=1)
+           # print(weight2_calc.shape)
+            weight2_calc = np.reshape(weight2_calc, [1, weight2_calc.shape[0]])
+            
+            batch_dict['weight_2'].append(ah.gen_parquet_batch(weight2_calc ,fill_col='weight_2' ,
                       epoch_num=epoch, test_num=test_id, col_names=weight_cols['weight_2']))
         
+        ah.array_to_parquet(path=path, test_stat=mse_epoch, fill_col='mse',
+                  test_num=test_id, col_names=weight_cols['mse'])
         for key, batches in batch_dict.items():
-            ah.results_to_parquet(path=path, batch_list=batches)
-        #return((mse_epoch, weight_1, weight_2))
-        
-        
-        def gen_test_datasets(self, num_tests, num_epochs, num_batch, path, seed):
-            '''
-            Description
-            -----------
-            Function to write multiple model fits to disk in parquet format.
+            if key != 'mse':
+                ah.results_to_parquet(path=path, batch_list=batches)
             
-            Parameters
-            ----------
-            num_epochs : int
-                number of training epochs
         
-            num_batch : int
-                number of batches for the model fit
-        
-            test_id : int
-                id for the current test iteration
-        
-            path : string
-                path to write parquet datasets to for later analysis
+    def gen_test_datasets(self, num_tests, num_epochs, num_batch, path, seed):
+        '''
+        Description
+        -----------
+        Function to write multiple model fits to disk in parquet format.
             
-            Returns
-            -------
-                : void
-                writes multiple results to disk in parquet format
+        Parameters
+        ----------
+        num_epochs : int
+            number of training epochs
+        
+        num_batch : int
+            number of batches for the model fit
+        
+        test_id : int
+            id for the current test iteration
+        
+        path : string
+            path to write parquet datasets to for later analysis
+            
+        Returns
+        -------
+            : void
+            writes multiple results to disk in parquet format
                 
-            '''
-            for i in np.arange(0, num_tests):
-                torch.manual_seed(seed)
-                self.model.apply(rff.init_weights)
-                self.fit(num_epochs=num_epochs, num_batch=num_batch, path=path)
+        '''
+        for i in np.arange(0, num_tests):
+            torch.manual_seed(seed)
+            self.model.apply(rff.init_weights)
+            self.fit(num_epochs=num_epochs, num_batch=num_batch, path=path, test_id=i)
                 
                 
 
