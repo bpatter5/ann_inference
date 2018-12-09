@@ -9,26 +9,21 @@ designed to highlight potential issues in applying neural network architectures.
 
 ### sample
 
- * _boot.py_: 
-     * script for performing bootstrap sampling on model params  
+ * _boot.py_: script for performing bootstrap sampling on model params  
  
  
 ### data
 
-* _load_data.py_: 
-    * script for generating datasets for testing
+* _load_data.py_: script for generating datasets for testing
 
-* _arrow_helper.py_: 
-    * script for reading/writing/serializing test results
+* _arrow_helper.py_: script for reading/writing/serializing test results
 
 
 ### regression
 
-* _feedforward.py_: 
-    * script for generating simple feedforward models
+* _feedforward.py_: script for generating simple feedforward models
 
 
 ### testing
 
-* _regression_test.py_: 
-    * script for generating test results from PyTorch models
+* _regression_test.py_: script for generating test results from PyTorch models
