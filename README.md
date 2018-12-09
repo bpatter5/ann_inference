@@ -10,13 +10,13 @@ designed to highlight potential issues in applying neural network architectures.
 ### sample
 
  * _boot.py_: 
-     * script for performing bootstrap sampling on model params.  
+     * script for performing bootstrap sampling on model params  
  
  
 ### data
 
 * _load_data.py_: 
-    * script for generating datasets for testing.
+    * script for generating datasets for testing
 
 * _arrow_helper.py_: 
     * script for reading/writing/serializing test results
