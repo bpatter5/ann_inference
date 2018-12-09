@@ -51,6 +51,32 @@ class RegressionTester():
         
     # method to fit model to dataset 
     def fit(self, num_epochs, num_batch, test_id, path):
+        '''
+        
+        Description
+        -----------
+        Function to fit model for a given number of epochs, batches, ids, and path.
+        
+        Parameters
+        ----------
+        num_epochs : int
+            number of training epochs
+        
+        num_batch : int
+            number of batches for the model fit
+        
+        test_id : int
+            id for the current test iteration
+        
+        path : string
+            path to write parquet datasets to for later analysis
+        
+        Returns
+        -------
+            : void
+            writes parameters and loss function to disk
+            
+        '''
         # zero grads 
         self.opt.zero_grad()
         
@@ -121,21 +147,81 @@ class RegressionTester():
         #return((mse_epoch, weight_1, weight_2))
         
         
-        def gen_test_datasets(self, num_tests, num_epochs, num_batch):
+        def gen_test_datasets(self, num_tests, num_epochs, num_batch, path, seed):
+            '''
+            Description
+            -----------
+            Function to write multiple model fits to disk in parquet format.
+            
+            Parameters
+            ----------
+            num_epochs : int
+                number of training epochs
+        
+            num_batch : int
+                number of batches for the model fit
+        
+            test_id : int
+                id for the current test iteration
+        
+            path : string
+                path to write parquet datasets to for later analysis
+            
+            Returns
+            -------
+                : void
+                writes multiple results to disk in parquet format
+                
+            '''
             for i in np.arange(0, num_tests):
-                self.model_vitals[i] = self.fit(num_epochs=num_epochs, num_batch=num_batch)
+                torch.manual_seed(seed)
+                self.model.apply(rff.init_weights)
+                self.fit(num_epochs=num_epochs, num_batch=num_batch, path=path)
+                
+                
 
 
 
 def _serialize_RegressionTester(test):
+    '''
+    Description
+    -----------
+    Custom serializer for RegressionTester.
+    
+    Parameters
+    ----------
+    test : RegressionTester
+        RegressionTester to serialize
+    
+    Returns
+    -------
+        : dict
+        dict containing alls the elements needed to init a new RegressionTester
+    '''
     return({'X':test.model_data.X, 'y':test.model_data.y, 'seed':test.model_data.seed,
             'train_pct':test.model_data.train_pct, 'hidden_units':test.hidden_units})
 
 def _deserialize_RegressionTester(test):
+    '''
+    
+    Description
+    -----------
+    Custom deserialization routine for RegressionTester.
+    
+    Parameters
+    ----------
+    test : RegressionTester
+        RegressionTester to serialize
+    
+    Returns
+    -------
+        : RegressionTester
+        
+    '''
     return(RegressionTester(ld.ModelData(test['X'], test['y'], test['seed'],
                                           test['train_pct']), test['hidden_units']))  
     
-        
+# init SerializationContext for RegressionTester 
 context = pa.SerializationContext()
 context.register_type(RegressionTester, 'RegressionTester' , 
                       custom_serializer=_serialize_RegressionTester ,

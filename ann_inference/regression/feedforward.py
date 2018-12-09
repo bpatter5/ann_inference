@@ -35,10 +35,10 @@ class RegressionFF(nn.Module):
 
 # function to initalize weights of a model
 # takes a model and weights as input
-def init_weights(m, init_func):
+def init_weights(m):
     # only work on linear layers
-    if type(m) == nn.Linear:
-        init_func(m.weight)
+    if isinstance(m, nn.Linear):
+        nn.init.xavier_uniform(m.weight.data)
         m.bias.data.fill_(0.01)
         
         
