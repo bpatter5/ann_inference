@@ -11,7 +11,7 @@ import numpy as np
 # helper function to sample from numpy array with replacement
 # takes a numpy array and optional size as input
 # outputs a np.array([size])
-def boot_sample(np_array, size=599):
+def boot_sample(np_array):
     '''
     Description
     -----------
@@ -22,14 +22,12 @@ def boot_sample(np_array, size=599):
     np_array : np.ndarray
         array to perform repeated sampling with replacement on
     
-    size : int, 599
-        number of bootstrap samples to generate
-    
     Returns
     -------
          : np.ndarray
          numpy array of shape=size    
     '''
+    size = np_array.shape[0]
     return(np.random.choice(np_array, size=size))
 
 # calculates bootstrap estimate of a given test stat
