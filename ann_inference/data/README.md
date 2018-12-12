@@ -58,3 +58,47 @@
         * nthreads : int(5) number of threads to use for reading the parquet store into memory
     * Returns
         * pandas.DataFrame from the Parquet files at the given path (must have same schema)
+        
+
+## load_data
+
+Methods for loading canned data for testing the properties of a network.
+
+* _gen_regression(samples, features, inform, bias=0.0, noise=1.0, random_state=None)_:
+    * Description:
+        * Generate datasets for regression problems
+    * Parameters:
+        * samples : int number of samples to generate
+        * features : int number of independent variables in the dataset
+        * inform : int number of informative features
+        * bias : float bias term in generated dataset
+        * noise : float variance of noise to inject into samples
+        * random_state : RandomState to seed the random number generator for samples
+        
+    * Returns:
+        * tuple(X, y) of independent and dependent variables
+        
+* _gen_friedman(i, samples, noise=1.0, random_state=None, features=20)_:
+    * Description:
+        * Generate datasets for regression problems    
+    * Parameters:
+        * i : int dataset to generate from datasets dict
+        * samples : int number of samples to generate
+        * features : int number of independent variables in the dataset
+        * noise : float variance of noise to inject into samples
+        * random_state : RandomState to seed the random number generator for samples
+    * Returns:
+        * tuple(X, y) of independent and dependent variables
+        
+
+#### ModelData
+
+* Description: 
+    * Class for data generation to fit a PyTorch model, see help(ModelData) for function definitions
+* Parameters:
+    * X : numpy.array of inputs for testing
+    * y : numpy.array of actual y values
+    * seed : int seed for random number generator
+    * train_pct : float, [0.0-1.0] percentage of dataset to save for training vs testing
+    
+    
