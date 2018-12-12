@@ -3,7 +3,7 @@
 # Updated By: bpatter5
 # Created On: 12/3/2018
 # Updated On: 12/8/2018
-# Purpose: 
+# Purpose: Methods for working with Parquet files and Arrow operations
 # =============================================================================
 
 import pyarrow as pa
